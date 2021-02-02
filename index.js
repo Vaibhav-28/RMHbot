@@ -33,8 +33,6 @@ client.on("message", (message) => {
 
   if (command === "hello") {
     client.commands.get("greet").execute(message, args);
-  } else if (command === "bestsong") {
-    dispatcher = client.commands.get("bestsong").execute(message, args);
   } else if (command === "play") {
     if (args.length)
       client.commands.get("play").execute(dispatcher, message, args);
