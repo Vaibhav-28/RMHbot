@@ -43,6 +43,8 @@ client.on("message", (message) => {
     client.commands.get("pause").execute(dispatcher, message);
   } else if (command === "resume") {
     client.commands.get("resume").execute(dispatcher, message);
+  } else if (command === "skip" || command === "next") {
+    client.commands.get("skip").execute(dispatcher, message);
   } else if (command === "stop") {
     client.commands.get("stop").execute(dispatcher, message);
   }
