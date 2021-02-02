@@ -1,10 +1,9 @@
 const ytdl = require("ytdl-core");
 const ytsearch = require("yt-search");
-
 module.exports = {
   name: "play",
   description: "play or pause a song",
-  async execute(message, args) {
+  async execute(dispatcher, message, args) {
     const voice_channel = message.member.voice.channel;
     if (!voice_channel) {
       return message.channel.send("Join a voice channel first");
@@ -14,8 +13,6 @@ module.exports = {
       const results = await ytsearch(query);
       return results.videos.length > 0 ? results.videos[0] : null;
     };
-
-    var dispatcher;
 
     function validURL(str) {
       var pattern = new RegExp(
@@ -29,31 +26,41 @@ module.exports = {
       ); // fragment locator
       return !!pattern.test(str);
     }
-    if (validURL(args[0])) {
-      try {
-        dispatcher = connection.play(
-          ytdl(args[0], {
-            filter: "audioonly",
-          })
-        );
-        dispatcher.on("finish", () => {
-          voice_channel.leave();
-        });
-        await message.reply("Playing from url");
-      } catch (error) {
-        await message.channel.send(`unable to play: ${error}`);
-      }
-    } else {
-      const video = await search_video(args.join(" "));
-
-      if (video) {
-        dispatcher = connection.play(ytdl(video.url, { filter: "audioonly" }));
-        dispatcher.on("finish", () => {
-          voice_channel.leave();
-        });
-      }
-      await message.reply(`Playing : ${video.title} `);
+    var video;
+    async function playSong() {
+      dispatcher.dispatcher = connection.play(
+        ytdl(dispatcher.q[0].url, { filter: "audioonly" })
+      );
+      await message.reply(`Playing : ${dispatcher.q[0].title}`);
+      dispatcher.q.shift();
+      dispatcher.dispatcher.on("finish", async () => {
+        if (dispatcher.q.length) {
+          playSong();
+        } else {
+          await voice_channel.leave();
+          await message.channel.send("RMH left");
+          dispatcher.dispatcher = null;
+        }
+      });
     }
-    return dispatcher;
+
+    if (validURL(args[0])) {
+      async function addVideo(url) {
+        let info = await ytdl.getInfo(url);
+        let song = {
+          title: info.videoDetails.title,
+          url: info.videoDetails.video_url,
+        };
+        if (info) dispatcher.q.push(song);
+        if (!dispatcher.dispatcher) playSong();
+        else message.reply(`${song.title} is added to queue`);
+      }
+      addVideo(args[0]);
+    } else {
+      video = await search_video(args.join(" "));
+      if (video) dispatcher.q.push(video);
+      if (!dispatcher.dispatcher) playSong();
+      else message.reply(`${video.title} is added to queue`);
+    }
   },
 };
