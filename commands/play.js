@@ -31,7 +31,7 @@ module.exports = {
       dispatcher.dispatcher = connection.play(
         ytdl(dispatcher.q[0].url, { filter: "audioonly" })
       );
-      await message.reply(`Playing : ${dispatcher.q[0].title}`);
+      await message.channel.send(`Playing : ${dispatcher.q[0].title}`);
       dispatcher.q.shift();
       dispatcher.dispatcher.on("finish", async () => {
         if (dispatcher.q.length) {
