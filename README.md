@@ -1,5 +1,5 @@
 # RMHbot
-Discord music bot.
+A Discord music bot.  
 Commands:  
 ~hello : bot greets you with "hi".  
 ~play [args(song name)]/~play [youtube link] : bot plays the song if queue is empty otherwise adds the song to the queue.    
